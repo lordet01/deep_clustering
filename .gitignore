@@ -1,0 +1,6 @@
+*.wav
+*.txt
+desktop.ini
+*.h5
+events*
+*.pyc
