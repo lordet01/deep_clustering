@@ -7,24 +7,42 @@ from vadwav import frame_generator, vad_collector, write_wave
 
 def main(spk_idx):
 
-    if spk_idx == 'spk1':
-        DB_PATH = './dataset/2mix_tr/male'
-        OUT_PATH = './dataset/2mix_tr/male_deepc'
+    if spk_idx == 'tr_spk1':
+        #DB_PATH = '/works/DB_Audio/wsj0/si_tr_spk1'
+        DB_PATH = './dataset/2mix_tr/male_deepc'
+		#OUT_PATH = './dataset/2mix_tr/male_deepc'
         LIST_PATH = 'train/list_spk1.txt'
+        LIST_PATH_TOT = 'train/list.txt'
         FS = 16000
-    elif spk_idx == 'spk2':
-        DB_PATH = './dataset/2mix_tr/female'
-        OUT_PATH = './dataset/2mix_tr/female_deepc'
+    elif spk_idx == 'tr_spk2':
+        #DB_PATH = '/works/DB_Audio/wsj0/si_tr_spk2'
+        DB_PATH = './dataset/2mix_tr/female_deepc'
+		#OUT_PATH = './dataset/2mix_tr/female_deepc'
         LIST_PATH = 'train/list_spk2.txt'
+        LIST_PATH_TOT = 'train/list.txt'
         FS = 16000
+    if spk_idx == 'dt_spk1':
+        #DB_PATH = '/works/DB_Audio/wsj0/si_dt_spk1'
+        DB_PATH = './dataset/2mix_tr/male_deepc'
+        #OUT_PATH = './dataset/2mix_tr/male_deepc'
+        LIST_PATH = 'valid/list_spk1.txt'
+        LIST_PATH_TOT = 'valid/list.txt'
+        FS = 16000
+    elif spk_idx == 'dt_spk2':
+        #DB_PATH = '/works/DB_Audio/wsj0/si_dt_spk2'
+        DB_PATH = './dataset/2mix_tr/female_deepc'
+        #OUT_PATH = './dataset/2mix_tr/female_deepc'
+        LIST_PATH = 'valid/list_spk2.txt'
+        LIST_PATH_TOT = 'valid/list.txt'
+        FS = 16000      
     
     #Initialize
-    if not os.path.exists(OUT_PATH):
-            os.makedirs(OUT_PATH)
+    ##if not os.path.exists(OUT_PATH):
+    ##        os.makedirs(OUT_PATH)
     if os.path.isfile(LIST_PATH):    
         os.remove(LIST_PATH)
-    if os.path.isfile('train/list.txt'):    
-        os.remove('train/list.txt')
+    if os.path.isfile(LIST_PATH_TOT):    
+        os.remove(LIST_PATH_TOT)
 
     #Load audio files from DB path
     flist = []
@@ -55,31 +73,34 @@ def main(spk_idx):
                 x *= 2.0
                 print("----Resample from " + str(fs_x) + "->" + str(FS) + "----")
 
-            #Cut off silences using VAD
-            vad = webrtcvad.Vad(1)
-            frames = frame_generator(30, x.astype('int16'), FS)
-            frames = list(frames)
-            fout_path = os.path.join(OUT_PATH, fname)
-            fout_path = fout_path.replace("//","/")
-            f = sf.SoundFile(fout_path, 'w', FS, 1, format='WAV')
-            for frame in frames:
-                if vad.is_speech(frame.bytes,FS): #when VAD is True
-                    frame_buff = np.frombuffer(frame.bytes,dtype='int16')
-                    f.write(frame_buff)
-            f.close
+            ###Cut off silences using VAD
+            ##vad = webrtcvad.Vad(1)
+            ##frames = frame_generator(30, x.astype('int16'), FS)
+            ##frames = list(frames)
+            ##fout_path = os.path.join(OUT_PATH, fname)
+            ##fout_path = fout_path.replace("//","/")
+            ##f = sf.SoundFile(fout_path, 'w', FS, 1, format='WAV')
+            ##for frame in frames:
+            ##    if vad.is_speech(frame.bytes,FS): #when VAD is True
+            ##        frame_buff = np.frombuffer(frame.bytes,dtype='int16')
+            ##        f.write(frame_buff)
+            ##f.close
 
 
             #Open write file for list.txt
             ftxt = open(LIST_PATH,'a')
             #Write otuput waves to the txt list
-            list_line = fout_path+' '+spk_idx+'\n'
+            ##list_line = fout_path+' '+spk_idx+'\n'
+            list_line = file_path+' '+spk_idx+'\n'
             ftxt.writelines(list_line)
     
     ftxt.close
 
 if __name__ == "__main__":
-    main(spk_idx='spk1') #from foa
-    main(spk_idx='spk2') #from mic
+    main(spk_idx='tr_spk1') 
+    main(spk_idx='tr_spk2') 
+    main(spk_idx='dt_spk1') 
+    main(spk_idx='dt_spk2') 
     #Merge two speaker's list into one text
     filenames = ['train/list_spk1.txt', 'train/list_spk2.txt']
     with open('train/list.txt', 'w') as outfile:
@@ -87,5 +108,11 @@ if __name__ == "__main__":
             with open(fname) as infile:
                 for line in infile:
                     outfile.write(line)
-
+					
+    filenames = ['valid/list_spk1.txt', 'valid/list_spk2.txt']
+    with open('valid/list.txt', 'w') as outfile:
+        for fname in filenames:
+            with open(fname) as infile:
+                for line in infile:
+                    outfile.write(line)
     

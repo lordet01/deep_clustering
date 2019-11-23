@@ -13,7 +13,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, LSTM
 from tensorflow.keras.layers import TimeDistributed, Bidirectional
 from tensorflow.keras.regularizers import l2
-from tensorflow.keras.optimizers import Nadam
+from tensorflow.keras.optimizers import Nadam, Adam
 from tensorflow.keras.models import model_from_json
 from tensorflow.keras.callbacks import ModelCheckpoint, TensorBoard
 from feats import get_egs
@@ -22,7 +22,6 @@ from config import EMBEDDINGS_DIMENSION, MIN_MIX, MAX_MIX
 from config import NUM_RLAYERS, SIZE_RLAYERS
 from config import BATCH_SIZE, STEPS_PER_EPOCH, NUM_EPOCHS, VALIDATION_STEPS
 from config import DEEPC_BASE, DROPOUT, RDROPOUT, L2R, CLIPNORM
-
 
 
 def get_dims(generator, embedding_size):
@@ -89,7 +88,9 @@ def affinitykmeans(Y, V):
     return norm(dot(T(V), V)) - norm(dot(T(V), Y)) * 2 + norm(dot(T(Y), Y))
 
 
-def train_nnet(train_list, valid_list, weights_path=None):
+def train_nnet(train_list, valid_list, weights_path=None, MODEL_BASE='model'):
+    K.set_floatx('float32')
+    
     train_gen = get_egs(train_list,
                         min_mix=MIN_MIX,
                         max_mix=MAX_MIX,
@@ -121,7 +122,8 @@ def train_nnet(train_list, valid_list, weights_path=None):
     if weights_path:
         model.load_weights(weights_path)
     model.compile(loss={'kmeans_o': affinitykmeans},
-                  optimizer=Nadam(clipnorm=CLIPNORM))
+                  #optimizer=NAdam(learning_rate=1e-4, epsilon=1e-3, clipnorm=CLIPNORM))
+				  optimizer=Adam(epsilon=1e-4, clipnorm=CLIPNORM))
 
     # checkpoint
     filepath = os.path.join(DEEPC_BASE, "weights-improvement-{epoch:02d}-{val_loss:.2f}.h5")
@@ -141,4 +143,4 @@ def train_nnet(train_list, valid_list, weights_path=None):
                         epochs=NUM_EPOCHS,
                         max_queue_size=512,
                         callbacks=callbacks_list)
-    save_model(model, 'model')
+    save_model(model, MODEL_BASE)

@@ -20,6 +20,7 @@ from predict import separate_sources, separate_sources_dcase2019_task3
 VISUALIZE = False
 TEST = True
 TEST_DB_DCASE2019_TASK3 = False
+PHASE_METHOD = 1
 
 def main():
     """Main function when called from command line"""
@@ -35,7 +36,7 @@ def main():
         print('Beginning training...')
         trn_path = os.path.join(DEEPC_BASE, 'train/list.txt')
         val_path = os.path.join(DEEPC_BASE, 'valid/list.txt')
-        train_nnet(trn_path, val_path)
+        train_nnet(trn_path, val_path, None, MODEL_BASE)
     model = load_model(MODEL_BASE)
 
     # From here on, all the code does is get 2 random speakers from the test
@@ -61,9 +62,9 @@ def main():
     # file and test with the following line
     if TEST:
         print('Beginning test...', end='')
-        test_in = os.path.join(DEEPC_BASE, 'test/_0__01Y_01YO030X_ORG.wav')
+        test_in = os.path.join(DEEPC_BASE, 'test/c_3__020_020C020R_ORG.wav')
         test_out = os.path.join(DEEPC_BASE, 'test/out')
-        separate_sources(test_in, model, 2, test_out)
+        separate_sources(test_in, model, 2, test_out, PHASE_METHOD)
         print('done')
 
     #Generate DCASE2019_TASK3 Databases

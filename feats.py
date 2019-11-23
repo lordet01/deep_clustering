@@ -192,6 +192,7 @@ def get_egs(wavlist, min_mix=2, max_mix=3, batch_size=1):
             if batch_count == batch_size:
                 inp = np.array(batch_x).reshape((batch_size,
                                                  TIMESTEPS, -1))
+                print(inp.shape)
                 out = np.array(batch_y).reshape((batch_size,
                                                  TIMESTEPS, -1))
                 yield({'input': inp},
